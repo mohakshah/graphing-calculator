@@ -45,6 +45,23 @@ class CalculatorBrain
         case Equals
     }
     
+    func setOperand(variableName: String) {
+        if let value = variableValues[variableName] {
+            accumulator = value
+        } else {
+            accumulator = 0.0
+        }
+        
+        internalProgram.append(variableName)
+    }
+    
+    var variableValues = [String: Double]()
+    
+    func setVariableValue(variableName: String, value: Double) {
+        variableValues[variableName] = value
+        print(variableValues)
+    }
+    
     func performOperation(symbol: String) {
         internalProgram.append(symbol)
         if let operation = operations[symbol] {
@@ -101,8 +118,12 @@ class CalculatorBrain
                 for op in arrayOfOps {
                     if let operand = op as? Double {
                         setOperand(operand)
-                    } else if let operation = op as? String {
-                        performOperation(operation)
+                    } else if let symbol = op as? String {
+                        if let _ = operations[symbol] {
+                            performOperation(symbol)
+                        } else {
+                            setOperand(symbol)
+                        }
                     }
                 }
             }
@@ -113,6 +134,12 @@ class CalculatorBrain
         accumulator = 0.0
         pendingBinaryOperation = nil
         internalProgram.removeAll()
+    }
+    
+    func undo() {
+        if let arrayOfOps = program as? [AnyObject] {
+            program = Array(arrayOfOps.dropLast(1))
+        }
     }
     
     var description: String {
@@ -179,6 +206,16 @@ class CalculatorBrain
                         needOperand = false
                         newEquation = false
                     }
+                } else {
+                    // assume that the symbol is a variable
+                    if newEquation {
+                        _description.removeAll()
+                    }
+                    
+                    _description.append("\(symbol)")
+                    
+                    needOperand = false
+                    newEquation = false
                 }
             }
             
@@ -189,6 +226,11 @@ class CalculatorBrain
     }
     
     var result: Double {
+        // simple way to re-evaluate the program
+        // by calling the setter of the program var
+        let foo = program
+        program = foo
+        
         return accumulator
     }
     

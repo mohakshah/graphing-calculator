@@ -56,7 +56,7 @@ class ViewController: UIViewController {
         }
     }
     
-    let brain = CalculatorBrain()
+    var brain = CalculatorBrain()
 
 
     @IBAction func performOperation(sender: UIButton) {
@@ -64,12 +64,16 @@ class ViewController: UIViewController {
             if let dv = displayValue {
                 brain.setOperand(dv)
             }
-            userIsInTheMiddleOfTyping = false
         }
         
         if let mathSymbol = sender.currentTitle {
             brain.performOperation(mathSymbol)
         }
+        
+        updateDisplays()
+    }
+    
+    private func updateDisplays() {
         displayValue = brain.result
         
         // set the secondary display
@@ -80,12 +84,29 @@ class ViewController: UIViewController {
         } else {
             secondaryDisplay.text! += " ="
         }
+        
+        userIsInTheMiddleOfTyping = false
     }
     
+    @IBAction func saveToMemory() {
+        // only set if the display has a valid number
+        if let dv = displayValue {
+            brain.variableValues["M"] = dv
+        }
+        
+        updateDisplays()
+    }
+    
+    @IBAction func loadFromMemory() {
+        brain.setOperand("M")
+        
+        updateDisplays()
+    }
     
     @IBAction func clearAll() {
         userIsInTheMiddleOfTyping = false
         brain.clear()
+        brain.variableValues.removeAll()
         displayValue = nil
         secondaryDisplay.text = secondaryDisplayDefaultValue
     }
@@ -97,11 +118,15 @@ class ViewController: UIViewController {
                 
                 if characters.count == 1 {
                     display.text = "0"
+                    userIsInTheMiddleOfTyping = false
                     return
                 }
                 
                 display.text = String(characters.dropLast())
             }
+        } else {
+            brain.undo()
+            updateDisplays()
         }
     }
     
