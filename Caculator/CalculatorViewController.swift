@@ -8,8 +8,18 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class CalculatorViewController: UIViewController {
     
+    override func viewDidLoad() {
+        
+        showGraph.enabledBackgroundColor = UIColor(red: 1, green: 0, blue: 0.5, alpha: 1)
+        showGraph.disabledBackgroundColor = UIColor.lightGrayColor()
+        
+        if let program = defaults.objectForKey(defaultsProgramKey) {
+            brain.program = program
+            updateDisplays()
+        }
+    }
     
     @IBOutlet weak var display: UILabel!
     @IBOutlet weak var secondaryDisplay: UILabel!
@@ -57,6 +67,9 @@ class ViewController: UIViewController {
     }
     
     var brain = CalculatorBrain()
+    
+    let defaults = NSUserDefaults.standardUserDefaults()
+    let defaultsProgramKey = "calculatorVCProgram"
 
 
     @IBAction func performOperation(sender: UIButton) {
@@ -69,10 +82,13 @@ class ViewController: UIViewController {
         if let mathSymbol = sender.currentTitle {
             brain.performOperation(mathSymbol)
         }
+        defaults.setObject(brain.program, forKey: defaultsProgramKey)
         
         updateDisplays()
     }
     
+    
+    @IBOutlet weak var showGraph: GraphButton!
     private func updateDisplays() {
         displayValue = brain.result
         
@@ -81,8 +97,10 @@ class ViewController: UIViewController {
         
         if brain.isPartialResult {
             secondaryDisplay.text! += " ..."
+            showGraph.enabled = false
         } else {
             secondaryDisplay.text! += " ="
+            showGraph.enabled = true
         }
         
         userIsInTheMiddleOfTyping = false
@@ -99,6 +117,7 @@ class ViewController: UIViewController {
     
     @IBAction func loadFromMemory() {
         brain.setOperand("M")
+        defaults.setObject(brain.program, forKey: defaultsProgramKey)
         
         updateDisplays()
     }
@@ -106,6 +125,7 @@ class ViewController: UIViewController {
     @IBAction func clearAll() {
         userIsInTheMiddleOfTyping = false
         brain.clear()
+        defaults.removeObjectForKey(defaultsProgramKey)
         brain.variableValues.removeAll()
         displayValue = nil
         secondaryDisplay.text = secondaryDisplayDefaultValue
@@ -126,9 +146,48 @@ class ViewController: UIViewController {
             }
         } else {
             brain.undo()
+            defaults.setObject(brain.program, forKey: defaultsProgramKey)
             updateDisplays()
         }
     }
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        switch segue.identifier {
+        case "showGraph"?:
+            var destinationVC = segue.destinationViewController
+            if let navVC = destinationVC as? UINavigationController {
+                destinationVC = navVC.visibleViewController ?? destinationVC
+            }
+            
+            if let graphVC = destinationVC as? GraphViewController {
+                graphVC.brain = CalculatorBrain()
+                graphVC.brain.program = brain.program
+            }
+            
+        default:
+            break;
+        }
+        
+    }
+    
 }
 
+class GraphButton: UIButton {
+    override var enabled: Bool {
+        didSet {
+            super.enabled = enabled
+            if enabled {
+                if let color = enabledBackgroundColor {
+                    backgroundColor = color
+                }
+            } else {
+                if let color = disabledBackgroundColor {
+                    backgroundColor = color
+                }
+            }
+        }
+    }
+    
+    var enabledBackgroundColor: UIColor?
+    var disabledBackgroundColor: UIColor?
+}

@@ -23,6 +23,7 @@ class CalculatorBrain
         "e"     : Operation.Constant(M_E),
         
         "sin"   : Operation.UnaryOperation(sin),
+        "tan"   : Operation.UnaryOperation(tan),
         "log"   : Operation.UnaryOperation(log10),
         "√"     : Operation.UnaryOperation(sqrt),
         "±"     : Operation.UnaryOperation { -$0 },
@@ -56,11 +57,6 @@ class CalculatorBrain
     }
     
     var variableValues = [String: Double]()
-    
-    func setVariableValue(variableName: String, value: Double) {
-        variableValues[variableName] = value
-        print(variableValues)
-    }
     
     func performOperation(symbol: String) {
         internalProgram.append(symbol)
@@ -163,18 +159,25 @@ class CalculatorBrain
                 if let operation = operations[symbol] {
                     switch operation {
                     case .UnaryOperation(_):
-                        let openBracketIndex: Int
-                        let closeBracketIndex: Int
+                        var openBracketIndex, closeBracketIndex: Int
+                        
                         if newEquation {
                             openBracketIndex = 0
                             closeBracketIndex = _description.count + 1
                         } else {
                             openBracketIndex = _description.count - 1
+                            
+                            // happens when the stack's first element is an operation
+                            if openBracketIndex < 0 {
+                                openBracketIndex = 0
+                            }
                             closeBracketIndex = _description.count + 1
                         }
                         
                         _description.insert("\(symbol)(", atIndex: openBracketIndex)
                         _description.insert(")", atIndex: closeBracketIndex)
+                        
+                        newEquation = true
                         
                     case .BinaryOperation(_):
                         _description.append(" \(symbol) ")
