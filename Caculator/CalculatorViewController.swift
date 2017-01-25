@@ -154,12 +154,8 @@ class CalculatorViewController: UIViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         switch segue.identifier {
         case "showGraph"?:
-            var destinationVC = segue.destinationViewController
-            if let navVC = destinationVC as? UINavigationController {
-                destinationVC = navVC.visibleViewController ?? destinationVC
-            }
             
-            if let graphVC = destinationVC as? GraphViewController {
+            if let graphVC = segue.destinationViewController.mainViewController as? GraphViewController {
                 graphVC.brain = CalculatorBrain()
                 graphVC.brain.program = brain.program
             }
@@ -175,7 +171,6 @@ class CalculatorViewController: UIViewController {
 class GraphButton: UIButton {
     override var enabled: Bool {
         didSet {
-            super.enabled = enabled
             if enabled {
                 if let color = enabledBackgroundColor {
                     backgroundColor = color
@@ -190,4 +185,16 @@ class GraphButton: UIButton {
     
     var enabledBackgroundColor: UIColor?
     var disabledBackgroundColor: UIColor?
+}
+
+extension UIViewController {
+    // if self is a UINavigationController, returns its visible vc
+    // otherwise, returns self
+    var mainViewController: UIViewController {
+        if let navcon = self as? UINavigationController {
+            return navcon.visibleViewController ?? self
+        }
+        
+        return self
+    }
 }

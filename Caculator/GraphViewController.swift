@@ -13,14 +13,14 @@ class GraphViewController: UIViewController, GraphDataSource
     var brain: CalculatorBrain! = nil
     let defaults = NSUserDefaults.standardUserDefaults()
     
-    let defaultsKeys = [
-        "program": "graphVCLastProgram",
-        "graphCenterX": "graphVCCenterX",
-        "graphCenterY": "graphVCCenterY",
-        "graphScale": "graphVCScale"
+    private struct defaultsKeys {
+        static let program = "graphVCLastProgram"
+        static let graphCenterX = "graphVCCenterX"
+        static let graphCenterY = "graphVCCenterY"
+        static let graphScale = "graphVCScale"
         
-    ]
-    
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         graphView.graphDS = self
@@ -88,7 +88,7 @@ class GraphViewController: UIViewController, GraphDataSource
             return
         }
         
-        defaults.setObject(brain.program, forKey: defaultsKeys["program"]!)
+        defaults.setObject(brain.program, forKey: defaultsKeys.program)
     }
     
     func restoreProgram() {
@@ -96,7 +96,7 @@ class GraphViewController: UIViewController, GraphDataSource
             return
         }
         
-        if let program = defaults.objectForKey(defaultsKeys["program"]!) {
+        if let program = defaults.objectForKey(defaultsKeys.program) {
             brain.program = program
         }
     }
@@ -105,24 +105,24 @@ class GraphViewController: UIViewController, GraphDataSource
         if graphView.graphCentre == nil {
             return
         }
-        defaults.setObject(Double(graphView.graphCentre.x), forKey: defaultsKeys["graphCenterX"]!)
-        defaults.setObject(Double(graphView.graphCentre.y), forKey: defaultsKeys["graphCenterY"]!)
+        defaults.setObject(Double(graphView.graphCentre.x), forKey: defaultsKeys.graphCenterX)
+        defaults.setObject(Double(graphView.graphCentre.y), forKey: defaultsKeys.graphCenterY)
     }
     
     func restoreGraphCenter() {
-        if let centerX = defaults.objectForKey(defaultsKeys["graphCenterX"]!) as? Double {
-            if let centerY = defaults.objectForKey(defaultsKeys["graphCenterY"]!) as? Double {
+        if let centerX = defaults.objectForKey(defaultsKeys.graphCenterX) as? Double {
+            if let centerY = defaults.objectForKey(defaultsKeys.graphCenterY) as? Double {
                 graphView.graphCentre = CGPoint(x: CGFloat(centerX), y: CGFloat(centerY))
             }
         }
     }
     
     func saveGraphScale() {
-        defaults.setDouble(Double(graphView.scale), forKey: defaultsKeys["graphScale"]!)
+        defaults.setDouble(Double(graphView.scale), forKey: defaultsKeys.graphScale)
     }
     
     func restoreGraphScale() {
-        let scale = defaults.doubleForKey(defaultsKeys["graphScale"]!)
+        let scale = defaults.doubleForKey(defaultsKeys.graphScale)
         if scale != 0 {
             graphView.scale = CGFloat(scale)
         }
